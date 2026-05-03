@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ศูนย์ช่วยเหลือประชาชน อบต.ม่อนจอง</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #f0f2f5; }
+        .nav-link.active { background-color: #004d40 !important; }
+        .card-header { background: #004d40; color: white; font-weight: 600; }
+        .btn-primary { background: #00796b; border: none; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="text-success">ศูนย์ช่วยเหลือประชาชนด้านสาธารณภัย</h2>
+        <h5>องค์การบริหารส่วนตำบลม่อนจอง</h5>
+    </div>
+
+    <ul class="nav nav-pills nav-fill mb-4 shadow-sm bg-white p-2 rounded" id="mainTab">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#reg">1. รับลงทะเบียน</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#survey" onclick="fetchData()">2. ตรวจสอบ/สำรวจ</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pay" onclick="fetchData()">3. ฝ่ายเบิกจ่าย</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- ฝ่ายที่ 1: ลงทะเบียน -->
+        <div class="tab-pane fade show active" id="reg">
+            <div class="card shadow">
+                <div class="card-header">แบบฟอร์มรับลงทะเบียน</div>
+                <div class="card-body">
+                    <form id="regForm">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label>ชื่อ-นามสกุล</label><input type="text" name="fullName" class="form-control" required></div>
+                            <div class="col-md-2"><label>บ้านเลขที่</label><input type="text" name="houseNo" class="form-control" required></div>
+                            <div class="col-md-2"><label>หมู่ที่</label><input type="number" name="villageNo" class="form-control" required></div>
+                            <div class="col-md-2"><label>รหัสไปรษณีย์</label><input type="text" name="zipcode" class="form-control" onchange="autoAddr(this.value)" placeholder="50310"></div>
+                            <div class="col-md-12"><label>ที่อยู่ (ดึงอัตโนมัติ)</label><input type="text" id="displayAddr" class="form-control" readonly></div>
+                            
+                            <hr>
+                            <h6>1. ความเสียหายจากวาตภัย (ถ้าไม่มีระบุ 0)</h6>
+                            <div class="col-md-2">ลอนคู่<input type="number" name="storm1" class="form-control" value="0"></div>
+                            <div class="col-md-2">ครอบลอนคู่<input type="number" name="storm2" class="form-control" value="0"></div>
+                            <div class="col-md-2">สังกะสี<input type="number" name="storm3" class="form-control" value="0"></div>
+                            <div class="col-md-2">ครอบสังกะสี<input type="number" name="storm4" class="form-control" value="0"></div>
+                            <div class="col-md-2">เมทัลชีท<input type="number" name="storm5" class="form-control" value="0"></div>
+                            <div class="col-md-2">อื่นๆ<input type="text" name="stormOther" class="form-control"></div>
+
+                            <hr>
+                            <h6>2. พื้นที่ทางการเกษตร/บ้านเรือน</h6>
+                            <div class="col-md-3">ที่นา (ไร่-แปลง-วา)<input type="text" name="agri1" class="form-control" placeholder="0-0-0"></div>
+                            <div class="col-md-3">สวน (ไร่-แปลง-วา)<input type="text" name="agri2" class="form-control" placeholder="0-0-0"></div>
+                            <div class="col-md-6">ทรัพย์สินเสียหาย<input type="text" name="assets" class="form-control" placeholder="เครื่องใช้ไฟฟ้า ฯลฯ"></div>
+                            
+                            <div class="col-md-6"><label>ชื่อผู้บันทึก</label><input type="text" name="recorder" class="form-control" required></div>
+                            <div class="col-md-6"><label>เบอร์โทรศัพท์</label><input type="text" name="phone" class="form-control" required></div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 mt-4">กดบันทึกข้อมูล (สถานะจะเป็นรอสำรวจอัตโนมัติ)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ฝ่ายที่ 2: ตรวจสอบ/สำรวจ -->
+        <div class="tab-pane fade" id="survey">
+            <div class="card shadow">
+                <div class="card-body">
+                    <input type="text" id="searchSurvey" class="form-control mb-3" placeholder="ค้นหา ชื่อ หรือ บ้านเลขที่..." onkeyup="filterTable('surveyTable')">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light"><tr><th>ชื่อ</th><th>ที่อยู่</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+                        <tbody id="surveyTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ฝ่ายที่ 3: เบิกจ่าย -->
+        <div class="tab-pane fade" id="pay">
+            <div class="card shadow"><div class="card-body" id="payContent">เลือกเมนูสำรวจเพื่ออัปเดตงานก่อน</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby1recBi7UFNKyE8APDn_6UwuVggLsq5xD5rXfJ2jopQ51uKDhy4N2P8huB64-EfLL8Uw/exec";
+
+    function autoAddr(zip) {
+        if(zip === "50310") document.getElementById('displayAddr').value = "ต.ม่อนจอง อ.อมก๋อย จ.เชียงใหม่";
+    }
+
+    document.getElementById('regForm').onsubmit = function(e) {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        data.action = "register";
+        
+        fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(data) })
+        .then(() => { alert("บันทึกข้อมูลแล้ว"); e.target.reset(); });
+    };
+
+    function fetchData() {
+        // ในระบบจริงจะใช้ fetch ดึงค่าจาก getData() ใน Code.gs 
+        // แต่เบื้องต้นให้ทดสอบการส่งข้อมูลฝ่าย 1 ให้สำเร็จก่อนครับ
+    }
+
+    function filterTable(tableId) {
+        let input = document.getElementById('searchSurvey').value.toLowerCase();
+        let rows = document.getElementById(tableId).getElementsByTagName('tr');
+        for (let row of rows) {
+            row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+        }
+    }
+</script>
+</body>
+</html>
